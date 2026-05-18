@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>For My Favorite Boy 💙</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue-50:#e8f4ff;
+  --blue-100:#bddeff;
+  --blue-200:#8ec6ff;
+  --blue-300:#5aaeff;
+  --blue-400:#2b96ff;
+  --blue-500:#0078f0;
+  --blue-600:#005ec2;
+  --blue-700:#004799;
+  --blue-800:#003070;
+  --blue-900:#001a47;
+  --sky:#d6eeff;
+  --accent:#ff6b9d;
+  --gold:#ffd166;
+  --mint:#a8f0d4;
+}
+html,body{height:100%;width:100%;overflow:hidden}
+body{
+  font-family:'Bricolage Grotesque',sans-serif;
+  background:var(--blue-900);
+  color:white;
+  position:relative;
+}
+
+/* Animated starfield bg */
+.bg-stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--dur,3s) ease-in-out infinite;opacity:0}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(0.5)}50%{opacity:var(--op,0.6);transform:scale(1)}}
+
+/* Floating particles */
+.floaties{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.floaty{position:absolute;top:-60px;animation:floatDown linear forwards;font-size:var(--fs,20px);opacity:0.85}
+@keyframes floatDown{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* Pages */
+.page{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:2rem 1.5rem;
+  z-index:10;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.6s ease,transform 0.6s ease;
+  transform:translateY(30px);
+}
+.page.active{opacity:1;pointer-events:all;transform:translateY(0)}
+
+/* Illustration SVG wrappers */
+.illus{margin-bottom:1.5rem;filter:drop-shadow(0 8px 24px rgba(0,120,255,0.4))}
+
+/* Glass card */
+.glass{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(20px);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:24px;
+  padding:1.75rem;
+}
+
+/* Buttons */
+.btn-main{
+  background:linear-gradient(135deg,var(--blue-400),var(--blue-600));
+  border:none;color:white;
+  padding:0.75rem 2.5rem;
+  border-radius:100px;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:1rem;font-weight:600;
+  cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,120,255,0.5);
+  transition:transform 0.2s,box-shadow 0.2s;
+  letter-spacing:0.02em;
+}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,120,255,0.7)}
+.btn-main:active{transform:scale(0.97)}
+
+/* Music toggle */
+#musicBtn{
+  position:fixed;top:16px;right:16px;z-index:100;
+  background:rgba(255,255,255,0.1);
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:50%;width:44px;height:44px;
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1.2rem;
+  transition:all 0.2s;
+}
+#musicBtn:hover{background:rgba(255,255,255,0.2)}
+
+/* Progress dots */
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:20}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s}
+.dot.on{background:var(--blue-300);width:22px;border-radius:100px}
+
+/* Letter page */
+#letterBox{
+  max-height:56vh;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.2) transparent;
+  padding-right:0.5rem;
+}
+#letterBox::-webkit-scrollbar{width:4px}
+#letterBox::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:10px}
+.letter-text{font-family:'Lora',serif;font-size:0.95rem;line-height:1.9;color:rgba(255,255,255,0.9)}
+
+/* Gallery slider */
+.gallery-wrap{position:relative;width:100%;max-width:360px;height:340px;margin:0 auto}
+.gcard{
+  position:absolute;inset:0;
+  border-radius:20px;overflow:hidden;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  transform:scale(0.85) translateX(60px);
+}
+.gcard.active{opacity:1;pointer-events:all;transform:scale(1) translateX(0)}
+.gcard img{width:100%;height:240px;object-fit:cover}
+.gcard .gcap{padding:0.75rem 1rem;font-size:0.82rem;font-style:italic;color:rgba(255,255,255,0.7)}
+
+.nav-row{display:flex;gap:1rem;margin-top:1rem;justify-content:center}
+.nav-btn{
+  background:rgba(255,255,255,0.08);
+  border:1.5px solid rgba(255,255,255,0.2);
+  color:white;font-size:1.2rem;
+  width:48px;height:48px;border-radius:50%;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-btn:hover{background:var(--blue-600);border-color:var(--blue-400)}
+
+/* Chip badge */
+.chip{
+  display:inline-block;
+  background:rgba(91,174,255,0.2);
+  border:1px solid rgba(91,174,255,0.4);
+  border-radius:100px;
+  padding:0.25rem 0.9rem;
+  font-size:0.78rem;
+  color:var(--blue-200);
+  margin-bottom:1rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  font-weight:600;
+}
+
+h1.big{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;line-height:1.2;margin-bottom:0.75rem}
+p.sub{font-size:clamp(0.9rem,3vw,1.05rem);color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:1.5rem;font-family:'Lora',serif;font-style:italic}
+
+/* --- INTERACTIVE TIUP LILIN STYLES --- */
+.candle-area {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  /* Supaya kliknya tidak terhalang elemen SVG internal child */
+  pointer-events: auto;
+}
+.candle-area svg {
+  pointer-events: none;
+}
+@keyframes flicker {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.06) rotate(1.5deg); opacity: 1; filter: drop-shadow(0 0 10px #ffaa00); }
+}
+.flame {
+  transform-origin: bottom center;
+  animation: flicker 0.5s ease-in-out infinite;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+/* Trigger sembunyikan api */
+.blown .flame {
+  opacity: 0 !important;
+  transform: scale(0) translateY(-20px) !important;
+}
+/* Jalur asap rokok/lilin tipis */
+.smoke-line {
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  opacity: 0;
+}
+.blown .smoke-line {
+  animation: riseSmoke 1.4s ease-out forwards;
+}
+@keyframes riseSmoke {
+  0% { stroke-dashoffset: 30; opacity: 0.8; filter: blur(0.5px); }
+  40% { opacity: 0.5; }
+  100% { stroke-dashoffset: 0; opacity: 0; filter: blur(3px); transform: translateY(-25px); }
+}
+
+@media(max-width:420px){
+  .page{padding:1.5rem 1rem}
+  .glass{padding:1.25rem}
+  .gallery-wrap{height:300px}
+  .gcard img{height:200px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-stars" id="stars"></div>
+<div class="floaties" id="floaties"></div>
+<audio id="bgm" src="music.mp3" loop></audio>
+
+<button id="musicBtn" onclick="toggleMusic()">
+  <span id="micon">🔊</span>
+</button>
+
+<div class="dots" id="dotsBar"></div>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page1">
+  <div class="illus">
+    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="80" cy="80" r="70" fill="#0a1f44" stroke="#2b96ff" stroke-width="2"/>
+      <path d="M60 55 Q80 40 100 55 Q110 75 100 95 Q80 110 65 100 Q45 80 60 55Z" fill="#ffd166" opacity="0.9"/>
+      <circle cx="80" cy="55" r="22" fill="#0a1f44"/>
+      <text x="30" y="50" font-size="14" fill="#5aaeff">✦</text>
+      <text x="110" y="45" font-size="10" fill="#ffd166">★</text>
+      <text x="115" y="100" font-size="16" fill="#5aaeff">✦</text>
+      <text x="28" y="110" font-size="10" fill="#ffd166">★</text>
+      <text x="58" y="88" font-size="20">💙</text>
+      <text x="88" y="75" font-size="13">✨</text>
+      <line x1="80" y1="10" x2="80" y2="20" stroke="#5aaeff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="140" y1="80" x2="150" y2="80" stroke="#5aaeff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="10" y1="80" x2="20" y2="80" stroke="#ffd166" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="chip">🎂 spesial buat kamu</div>
+  <h1 class="big">hai ganteng,<br>ada sesuatu buat kamu ✨</h1>
+  <p class="sub">klik tombol di bawah ya~</p>
+  <button class="btn-main" onclick="go(2)">next →</button>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page2">
+  <div class="illus">
+    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="80" cy="80" r="70" fill="#050e24" stroke="#2b96ff" stroke-width="1.5"/>
+      <ellipse cx="80" cy="90" rx="55" ry="14" stroke="#5aaeff" stroke-width="3" fill="none" opacity="0.5"/>
+      <circle cx="80" cy="75" r="32" fill="#185fa5"/>
+      <circle cx="80" cy="75" r="32" fill="url(#pg)" opacity="0.6"/>
+      <defs>
+        <radialGradient id="pg" cx="35%" cy="35%">
+          <stop offset="0%" stop-color="#5aaeff" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#004799" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <path d="M50 70 Q80 65 110 70" stroke="#2b96ff" stroke-width="2.5" fill="none" opacity="0.7"/>
+      <path d="M52 80 Q80 76 108 80" stroke="#5aaeff" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <text x="22" y="45" font-size="16">💙</text>
+      <text x="116" y="55" font-size="12">🩵</text>
+      <text x="30" y="115" font-size="10">✨</text>
+      <text x="118" y="118" font-size="14">⭐</text>
+    </svg>
+  </div>
+  <div class="chip">💫 quote of the day</div>
+  <h1 class="big" style="font-size:clamp(1.3rem,4vw,1.9rem);font-style:italic;font-weight:400;font-family:'Lora',serif">
+    "in a world full of trends,<br>you are my classic."
+  </h1>
+  <p class="sub">dan kamu gak tau betapa beruntungnya aku<br>bisa ketemu kamu 🥺</p>
+  <button class="btn-main" onclick="go(3)">terus baca →</button>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="page3">
+  <div class="illus">
+    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="80" cy="80" r="70" fill="#071529" stroke="#2b96ff" stroke-width="1.5"/>
+      <ellipse cx="80" cy="110" rx="46" ry="10" fill="#003070" opacity="0.6"/>
+      <rect x="40" y="80" width="80" height="32" rx="8" fill="#185fa5"/>
+      <rect x="40" y="80" width="80" height="12" rx="6" fill="#2b96ff" opacity="0.7"/>
+      <path d="M40 84 Q45 92 50 84 Q55 92 60 84 Q65 92 70 84 Q75 92 80 84 Q85 92 90 84 Q95 92 100 84 Q105 92 110 84 Q115 92 120 84" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <rect x="58" y="58" width="8" height="24" rx="4" fill="#ffd166"/>
+      <rect x="76" y="52" width="8" height="30" rx="4" fill="#ff6b9d"/>
+      <rect x="94" y="58" width="8" height="24" rx="4" fill="#a8f0d4"/>
+      <ellipse cx="62" cy="55" rx="4" ry="6" fill="#ffaa00" opacity="0.9"/>
+      <ellipse cx="80" cy="49" rx="4" ry="6" fill="#ff6b9d" opacity="0.9"/>
+      <ellipse cx="98" cy="55" rx="4" ry="6" fill="#5aaeff" opacity="0.9"/>
+      <text x="18" y="60" font-size="16">🎉</text>
+      <text x="120" y="60" font-size="14">🎊</text>
+      <text x="22" y="110" font-size="12">✨</text>
+      <text x="118" y="105" font-size="12">💙</text>
+    </svg>
+  </div>
+  <div class="chip">🎂 happy birthday!</div>
+  <h1 class="big">kamu makin keren<br>setiap tahunnya 💙</h1>
+  <p class="sub">selamat ulang tahun, sayang.<br>semoga semua doa-doamu terkabul ya 🥹</p>
+  <button class="btn-main" onclick="go(4)">continue →</button>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page" id="page4">
+  <div class="illus">
+    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="80" cy="80" r="70" fill="#060d1e" stroke="#2b96ff" stroke-width="1.5"/>
+      <path d="M80 108 C80 108 40 82 40 62 C40 50 50 44 60 48 C68 51 75 58 80 64 C85 58 92 51 100 48 C110 44 120 50 120 62 C120 82 80 108 80 108Z" fill="#185fa5"/>
+      <path d="M80 108 C80 108 40 82 40 62 C40 50 50 44 60 48 C68 51 75 58 80 64 C85 58 92 51 100 48 C110 44 120 50 120 62 C120 82 80 108 80 108Z" fill="url(#hg)" opacity="0.7"/>
+      <defs>
+        <radialGradient id="hg" cx="40%" cy="30%">
+          <stop offset="0%" stop-color="#5aaeff"/>
+          <stop offset="100%" stop-color="#185fa5" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <path d="M70 72 C70 65 75 61 80 64 C85 61 90 65 90 72 C90 80 80 88 80 88 C80 88 70 80 70 72Z" fill="white" opacity="0.15"/>
+      <text x="20" y="40" font-size="10" fill="#5aaeff">✦</text>
+      <text x="125" y="38" font-size="12" fill="#ffd166">★</text>
+      <text x="15" y="100" font-size="14" fill="#ffd166">✨</text>
+      <text x="124" y="105" font-size="10" fill="#5aaeff">✦</text>
+      <text x="68" y="30" font-size="12" fill="#ff6b9d">💗</text>
+    </svg>
+  </div>
+  <div class="chip">🌸 terima kasih</div>
+  <h1 class="big">makasih udah lahir<br>ke dunia ini 🥺</h1>
+  <p class="sub">dan makasih sudah jadi bagian<br>dari hidup aku yang indah ini 💙</p>
+  <button class="btn-main" onclick="go(5)">next ❤️</button>
+</div>
+
+<!-- PAGE 5: INTERACTIVE BLOW CANDLE (FIXED CLICK & SEPARATED MUSIC) -->
+<div class="page" id="page5">
+  <div class="candle-area" id="candleWrapper" onclick="blowCandle()">
+    <div class="illus">
+      <svg width="180" height="180" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="80" cy="80" r="72" fill="#040e24" stroke="#2b96ff" stroke-width="1.5"/>
+        <ellipse cx="80" cy="122" rx="46" ry="8" fill="#002050" opacity="0.6"/>
+        
+        <!-- Cake Base Structure -->
+        <rect x="40" y="90" width="80" height="32" rx="6" fill="#185fa5"/>
+        <rect x="40" y="90" width="80" height="10" rx="4" fill="#2b96ff" opacity="0.7"/>
+        <path d="M40 93 Q45 99 50 93 Q55 99 60 93 Q65 99 70 93 Q75 99 80 93 Q85 99 90 93 Q95 99 100 93 Q105 99 110 93 Q115 99 120 93" stroke="white" stroke-width="2.5" fill="none" opacity="0.3"/>
+        
+        <!-- THE LILIN (Sangat Jelas Terlihat di Tengah Kue) -->
+        <rect x="76" y="65" width="8" height="25" rx="2" fill="#ffd166"/>
+        <path d="M76 70 L84 73 M76 77 L84 80" stroke="#ff6b9d" stroke-width="1.5"/>
+        
+        <!-- Smoke Effect Path (Akan Bergerak Saat Padam) -->
+        <path class="smoke-line" d="M80 60 Q76 45 84 30 T78 15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- THE FLAME (Api Lilin dengan Animasi Flicker Kedip) -->
+        <g class="flame" id="candleFlame">
+          <ellipse cx="80" cy="50" rx="9" ry="14" fill="#ffaa00" opacity="0.4"/>
+          <path d="M80 37 C76 44 75 54 80 56 C85 54 84 44 80 37 Z" fill="#ffd166"/>
+          <path d="M80 43 C78 47 78 52 80 53 C82 52 82 47 80 43 Z" fill="#ff6b9d" opacity="0.8"/>
+        </g>
+        
+        <!-- Extra decorations -->
+        <text x="22" y="65" font-size="14">✨</text>
+        <text x="124" y="65" font-size="14">✨</text>
+        <text x="30" y="115" font-size="12">💙</text>
+        <text x="120" y="115" font-size="12">🧁</text>
+      </svg>
+    </div>
+  </div>
+  
+  <div class="chip" id="cChip">🎂 yu tiup lilinya dulu</div>
+  <h1 class="big" id="cTitle">tiup lilinnya<br>sekarang yuk! 🥺</h1>
+  <p class="sub" id="cSub">Tap / ketuk langsung di lilin/kuenya untuk meniup ya~</p>
+  <button class="btn-main" id="cNextBtn" onclick="go(6)" style="display:none; margin-top:0.5rem;">Next →</button>
+</div>
+
+<!-- PAGE 6 -->
+<div class="page" id="page6">
+  <div class="illus">
+    <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="80" cy="80" r="70" fill="#060f25" stroke="#2b96ff" stroke-width="1.5"/>
+      <rect x="28" y="55" width="104" height="70" rx="10" fill="#0c447c"/>
+      <rect x="28" y="55" width="104" height="70" rx="10" fill="none" stroke="#2b96ff" stroke-width="1.5"/>
+      <path d="M28 55 L80 95 L132 55" stroke="#5aaeff" stroke-width="2" fill="none"/>
+      <rect x="50" y="35" width="60" height="55" rx="6" fill="white" opacity="0.95"/>
+      <line x1="60" y1="50" x2="100" y2="50" stroke="#bddeff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="60" y1="60" x2="100" y2="60" stroke="#bddeff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="60" y1="70" x2="88" y2="70" stroke="#bddeff" stroke-width="2" stroke-linecap="round"/>
+      <text x="72" y="83" font-size="14">💙</text>
+      <text x="18" y="50" font-size="14">✉️</text>
+      <text x="122" y="48" font-size="12" fill="#ffd166">★</text>
+      <text x="20" y="115" font-size="10" fill="#5aaeff">✦</text>
+      <text x="126" y="112" font-size="12">✨</text>
+    </svg>
+  </div>
+  <div class="chip">💌 pesan spesial</div>
+  <h1 class="big">aku punya pesan panjang<br>buat kamu~ 🥹</h1>
+  <p class="sub">siap buat baca? ini langsung<br>dari hati aku ya 💙</p>
+  <button class="btn-main" onclick="startWish()">baca wish ku →</button>
+</div>
+
+<!-- PAGE 7: THE LETTER -->
+<div class="page" id="page7">
+  <div class="glass" style="width:100%;max-width:500px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+      <span style="font-size:1.5rem">💌</span>
+      <span style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue-200);font-weight:600">My Wish For You</span>
+    </div>
+    <div id="letterBox">
+      <p id="letterText" class="letter-text"></p>
+    </div>
+    <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;opacity:0.5;font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:0.75rem">
+      <span>With love, Your Girlfriend 💙</span>
+      <span id="typingStatus">typing...</span>
+    </div>
+  </div>
+  <button id="toGalleryBtn" class="btn-main" onclick="go(8)" style="display:none;margin-top:1.5rem;animation:pulse 1.5s infinite">
+    Lihat kenangan kita 📸
+  </button>
+</div>
+
+<!-- PAGE 8: GALLERY -->
+<div class="page" id="page8">
+  <div class="chip" style="margin-bottom:0.75rem">📸 our little time machine ✨</div>
+  <div class="gallery-wrap">
+    <div class="gcard active">
+      <img src="img/foto1.jpg" alt="Memory 1">
+      <div class="gcap">"ini di mana cerita kita dimulai..." 🩵</div>
+    </div>
+    <div class="gcard">
+      <img src="img/foto2.jpg" alt="Memory 2">
+      <div class="gcap">"one of my favorite moments with u." 💙</div>
+    </div>
+    <div class="gcard">
+      <img src="img/foto3.jpg" alt="Memory 3">
+      <div class="gcap">"kamu kelihatan ganteng banget di sini!" 😍</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn" onclick="prevSlide()">←</button>
+    <button class="nav-btn" onclick="nextSlide()">→</button>
+  </div>
+  <p style="margin-top:1.25rem;font-size:0.75rem;opacity:0.3">forever and always 💙</p>
+</div>
+
+<style>
+@keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(0,120,255,0.5)}50%{box-shadow:0 8px 40px rgba(0,120,255,0.9),0 0 0 8px rgba(0,120,255,0.15)}}
+</style>
+
+<script>
+const TOTAL_PAGES = 8;
+const bgm = document.getElementById('bgm');
+const musicBtn = document.getElementById('musicBtn');
+let currentPage = 1;
+let slide = 0;
+let musicPlaying = false;
+let isBlown = false;
+
+const wish = `happy birthdaayy sayangnyaa akuu ❤️
+selamat menginjak kepalaa duaaaa, 
+
+aku bersyukur banget bisa kenal dan punya kamu sampai hari ini. dari semua hal yang dateng dan pergi dari hidup aku, kamu jadi salah satu alasan kenapa aku selalu pengen pulang dan bertahan. kamu bukan cuma seseorang yang aku sayang, tapi juga tempat paling nyaman buat aku cerita, ketawa, dan jadi diri sendiri. maaciii yaaa sayangg udaaa hadir dan nemenin aku sejauh ini. makasiii yaaa karena selalu usaha buat ngertiin aku, sabar sama sifat aku, dan selalu bikin aku ngerasa dicintai dengan cara yang tulus. akuuu mungkin ga selalu billing, tapi kehadiran kamu berarti bangetttt buat aku. maaciii udaa bikin hidupp akuu jadii berwarnaa. di umur kamu yang baru ini, aku cuma berharap semoga semua hal baik selalu nyamperin kamuuu yaaa sayanggg, semogaaa langkah kamu dimudahin, hati kamu selalu kuat, dan bahagiamu ga pernah kurang. kalo nantii suatu hari hidup lagi berat, aku harap kamu inget kalo kamu ga sendirian, karena aku akan selalu ada di samping kamuu 🤍
+dannn semogaaa bukan cuma ulang tahun tahun ini yang bisa aku rayain sama kamu, tapi ulang tahun ulang tahun berikutnya jugaaakk yaaww. aku mau tetap ada di cerita hidup kamu, selama mungkin, selama kita masiii sama sama mau berjuang ❤️
+
+sekali lagi, selamat ulang tahun sayangkuu ❤️`;
+
+// Setup stars
+function setupStars(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random()*2.5+0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${(Math.random()*4+2).toFixed(1)}s;--op:${(Math.random()*0.5+0.3).toFixed(2)};animation-delay:${(Math.random()*5).toFixed(1)}s`;
+    c.appendChild(s);
+  }
+}
+
+// Setup dots
+function setupDots(){
+  const bar = document.getElementById('dotsBar');
+  bar.innerHTML = '';
+  for(let i=1;i<=TOTAL_PAGES;i++){
+    const d = document.createElement('div');
+    d.className = 'dot'+(i===1?' on':'');
+    d.id = 'dot'+i;
+    bar.appendChild(d);
+  }
+}
+
+// Floaties
+const emojis = ['💙','🩵','✨','🌸','⭐','💫','🎉','💐','🎊','❄️'];
+function spawnFloat(){
+  const c = document.getElementById('floaties');
+  const el = document.createElement('div');
+  el.className = 'floaty';
+  el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  el.style.cssText = `left:${Math.random()*100}vw;--fs:${Math.floor(Math.random()*18+10)}px;animation-duration:${(Math.random()*4+3).toFixed(1)}s`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(), 7000);
+}
+setInterval(spawnFloat, 400);
+
+function go(n){
+  document.querySelector('.page.active')?.classList.remove('active');
+  document.getElementById('page'+n).classList.add('active');
+  document.querySelectorAll('.dot').forEach(d=>d.classList.remove('on'));
+  document.getElementById('dot'+n)?.classList.add('on');
+  currentPage = n;
+  if(n===7) typeWish();
+}
+
+// Interactive Blow Candle function (FIXED CLICK DETECTOR)
+function blowCandle() {
+  if(isBlown) return;
+  isBlown = true;
+  
+  console.log('Candle blown!'); // Debug log
+  
+  // Matikan api lilin & munculkan asap
+  const wrapper = document.getElementById('candleWrapper');
+  wrapper.classList.add('blown');
+  
+  // Ledakan confetti kecil tanda sukses ditiup
+  confetti({particleCount: 60, spread: 50, origin: {y: 0.6}, colors: ['#2b96ff','#ffd166','#ffffff']});
+  
+  // Perbarui teks halaman tiup lilin secara dinamis
+  document.getElementById('cChip').textContent = '🎉 yey! 🎉';
+  document.getElementById('cTitle').innerHTML = 'make a wish! 😍';
+  document.getElementById('cSub').textContent = 'Harapan-harapan baikmu sudah disimpan rapat~';
+  
+  // Tampilkan tombol next setelah delay singkat
+  setTimeout(() => {
+    document.getElementById('cNextBtn').style.display = 'inline-block';
+  }, 400);
+}
+
+// Add event listener untuk candle area (lebih reliable)
+document.addEventListener('DOMContentLoaded', function() {
+  const candleWrapper = document.getElementById('candleWrapper');
+  if(candleWrapper) {
+    candleWrapper.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      blowCandle();
+    });
+  }
+});
+
+// Mulai nyalakan lagu saat tombol 'baca wish ku' di Page 6 ditekan (Menuju Surat Teks)
+function startWish(){
+  bgm.play().catch(()=>{});
+  musicBtn.style.display = 'flex';
+  musicPlaying = true;
+  go(7);
+}
+
+function toggleMusic(){
+  if(bgm.paused){bgm.play();document.getElementById('micon').textContent='🔊';musicPlaying=true}
+  else{bgm.pause();document.getElementById('micon').textContent='🔇';musicPlaying=false}
+}
+
+function typeWish(){
+  const el = document.getElementById('letterText');
+  const box = document.getElementById('letterBox');
+  el.textContent='';
+  let i=0;
+  function t(){
+    if(i<wish.length){
+      el.textContent+=wish[i];
+      box.scrollTop=box.scrollHeight;
+      i++;
+      setTimeout(t, wish[i-1]==='\n'?80:30);
+    } else {
+      document.getElementById('typingStatus').textContent='selesai ✓';
+      const btn = document.getElementById('toGalleryBtn');
+      btn.style.display='block';
+      confetti({particleCount:200,spread:80,origin:{y:0.6},colors:['#2b96ff','#5aaeff','#ffd166','#ff6b9d','#a8f0d4']});
+    }
+  }
+  t();
+}
+
+// Gallery
+const cards = document.querySelectorAll('.gcard');
+function showSlide(){
+  cards.forEach(c=>c.classList.remove('active'));
+  cards[slide].classList.add('active');
+}
+function nextSlide(){slide=(slide+1)%cards.length;showSlide()}
+function prevSlide(){slide=(slide-1+cards.length)%cards.length;showSlide()}
+
+// Touch swipe for gallery
+let tx=0;
+document.getElementById('page8').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.getElementById('page8').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>40){dx<0?nextSlide():prevSlide()}
+},{passive:true});
+
+setupStars();
+setupDots();
+</script>
+</body>
+</html>
